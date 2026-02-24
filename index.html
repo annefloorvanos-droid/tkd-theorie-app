@@ -4,6 +4,21 @@
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>TKD Theorie App</title>
+
+  <style>
+    body { font-family: Arial; padding: 20px; }
+    button {
+      display: block;
+      margin: 8px 0;
+      padding: 10px;
+      font-size: 16px;
+      cursor: pointer;
+    }
+    .item {
+      margin-left: 20px;
+      margin-bottom: 6px;
+    }
+  </style>
 </head>
 <body>
   <h1>TKD Theorie</h1>
@@ -24,15 +39,33 @@
 
       if (error) {
         document.getElementById("app").innerText = "Fout bij laden";
-        console.error(error);
         return;
       }
 
-      const html = data
-        .map(b => `<div>🥋 ${b.name}</div>`)
-        .join("");
+      const html = data.map(b => `
+        <button onclick="loadItems('${b.id}', '${b.name}')">
+          🥋 ${b.name}
+        </button>
+        <div id="belt-${b.id}"></div>
+      `).join("");
 
       document.getElementById("app").innerHTML = html;
+    }
+
+    async function loadItems(beltId, beltName) {
+      const { data, error } = await client
+        .from("items")
+        .select("*")
+        .eq("belt_id", beltId)
+        .order("sort_order");
+
+      if (error) return;
+
+      const html = data.map(i => `
+        <div class="item">📘 ${i.title}</div>
+      `).join("");
+
+      document.getElementById(`belt-${beltId}`).innerHTML = html || "<div class='item'>Nog geen theorie</div>";
     }
 
     loadBelts();
