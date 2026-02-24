@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="nl">
+<head>
+  <meta charset="UTF-8" />
+  <title>TKD Theorie App</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1" />
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+      margin: 0;
+      background: #0f172a;
+      color: white;
+      text-align: center;
+    }
+    header {
+      background: #111827;
+      padding: 20px;
+      font-size: 24px;
+      font-weight: bold;
+    }
+    .container {
+      padding: 40px 20px;
+      max-width: 900px;
+      margin: 0 auto;
+    }
+    .card {
+      background: #1f2937;
+      padding: 20px;
+      border-radius: 12px;
+      margin: 15px 0;
+    }
+    .belt {
+      display: inline-block;
+      padding: 10px 18px;
+      border-radius: 999px;
+      margin: 6px;
+      font-weight: bold;
+      background: #374151;
+      cursor: pointer;
+    }
+    .belt:hover {
+      background: #4b5563;
+    }
+    footer {
+      margin-top: 40px;
+      padding: 20px;
+      font-size: 12px;
+      opacity: 0.7;
+    }
+  </style>
+</head>
+<body>
+  <header>🥋 TKD Theorie App</header>
+
+  <div class="container">
+    <div class="card">
+      <h2>Welkom!</h2>
+      <p>Kies je bandgraad om te beginnen met leren.</p>
+    </div>
+
+    <div class="card">
+      <h3>Bandgraden</h3>
+
+      <div class="belt">Wit</div>
+      <div class="belt">Wit-geel</div>
+      <div class="belt">Geel</div>
+      <div class="belt">Geel-groen</div>
+      <div class="belt">Groen</div>
+      <div class="belt">Groen-blauw</div>
+      <div class="belt">Blauw</div>
+      <div class="belt">Blauw-rood</div>
+      <div class="belt">Rood</div>
+      <div class="belt">Rood-zwart</div>
+    </div>
+
+    <div class="card">
+      <h3>Status</h3>
+      <p>🚧 Eerste versie — theorie wordt geladen…</p>
+    </div>
+  </div>
+
+  <footer>
+    TKD Vereniging • Webapp prototype
+  </footer>
+</body>
+</html>

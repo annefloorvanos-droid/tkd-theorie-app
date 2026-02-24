@@ -1,0 +1,8 @@
+{
+  "name": "tkd-theorie-app",
+  "private": true,
+  "scripts": {
+    "build": "echo 'No build step required'",
+    "start": "echo 'Static site'"
+  }
+}
