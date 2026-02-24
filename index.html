@@ -6,7 +6,36 @@
   <title>TKD Theorie App</title>
 </head>
 <body>
-  <h1>TKD Theorie App werkt 🎉</h1>
-  <p>Je site is live!</p>
+  <h1>TKD Theorie</h1>
+  <div id="app">Laden...</div>
+
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+  <script>
+    const supabaseUrl = "https://sodljzdnpkapucmawkig.supabase.co";
+    const supabaseKey = "sb_publishable_9PmXbb3zPw-vzRS05t5_Ug_7tTUITtK";
+
+    const client = supabase.createClient(supabaseUrl, supabaseKey);
+
+    async function loadBelts() {
+      const { data, error } = await client
+        .from("belts")
+        .select("*")
+        .order("sort_order");
+
+      if (error) {
+        document.getElementById("app").innerText = "Fout bij laden";
+        console.error(error);
+        return;
+      }
+
+      const html = data
+        .map(b => `<div>🥋 ${b.name}</div>`)
+        .join("");
+
+      document.getElementById("app").innerHTML = html;
+    }
+
+    loadBelts();
+  </script>
 </body>
 </html>
