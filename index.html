@@ -160,7 +160,39 @@
         .replaceAll('"', "&quot;")
         .replaceAll("'", "&#039;");
     }
+function renderBody(text) {
+  const lines = String(text).split(/\r?\n/);
 
+  // Als er tab-gescheiden regels in zitten → maak er een tabel van
+  const hasTabs = lines.some(l => l.includes("\t"));
+  if (hasTabs) {
+    let html = `<table class="kv">`;
+    for (const line of lines) {
+      const trimmed = line.trim();
+      if (!trimmed) {
+        html += `<tr><td class="k">&nbsp;</td><td class="v">&nbsp;</td></tr>`;
+        continue;
+      }
+
+      // splits op één of meerdere tabs
+      const parts = trimmed.split(/\t+/).map(p => p.trim()).filter(Boolean);
+
+      if (parts.length >= 2) {
+        const k = escapeHtml(parts[0]);
+        const v = escapeHtml(parts.slice(1).join(" "));
+        html += `<tr><td class="k">${k}</td><td class="v">${v}</td></tr>`;
+      } else {
+        // regels zonder tab → als "kop" over de volle breedte
+        html += `<tr><td class="k" colspan="2"><strong>${escapeHtml(trimmed)}</strong></td></tr>`;
+      }
+    }
+    html += `</table>`;
+    return html;
+  }
+
+  // Anders gewoon normale tekst
+  return escapeHtml(text).replaceAll("\n", "<br>");
+}
     loadBelts();
   </script>
 </body>
