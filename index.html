@@ -3,69 +3,162 @@
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <title>TKD Theorie App</title>
+  <title>TKD Theorie</title>
 
   <style>
-    body { font-family: Arial; padding: 20px; }
-    button {
-      display: block;
+    body { font-family: Arial, sans-serif; padding: 16px; max-width: 900px; margin: 0 auto; }
+    h1 { margin-bottom: 12px; }
+    .beltBtn {
+      display: block; width: 100%;
+      margin: 10px 0; padding: 12px 14px;
+      font-size: 18px; cursor: pointer;
+      border: 1px solid #ccc; border-radius: 10px;
+      background: #f3f3f3;
+      text-align: left;
+    }
+    .beltWrap { margin-bottom: 12px; }
+
+    .moduleTitle {
+      margin: 10px 0 6px;
+      font-weight: bold;
+      padding: 8px 10px;
+      background: #eef3ff;
+      border-radius: 10px;
+      border: 1px solid #d7e3ff;
+    }
+
+    details {
+      background: white;
+      border: 1px solid #e4e4e4;
+      border-radius: 10px;
+      padding: 10px 12px;
       margin: 8px 0;
-      padding: 10px;
-      font-size: 16px;
-      cursor: pointer;
+      box-shadow: 0 1px 4px rgba(0,0,0,0.05);
     }
-    .item {
-      margin-left: 20px;
-      margin-bottom: 6px;
-    }
+    summary { cursor: pointer; font-weight: 600; }
+    .bodyText { margin-top: 10px; white-space: pre-wrap; line-height: 1.35; }
+    .muted { color: #666; font-style: italic; padding: 8px 10px; }
   </style>
 </head>
+
 <body>
-  <h1>TKD Theorie</h1>
+  <h1>🥋 TKD Theorie</h1>
   <div id="app">Laden...</div>
 
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
   <script>
     const supabaseUrl = "https://sodljzdnpkapucmawkig.supabase.co";
     const supabaseKey = "sb_publishable_9PmXbb3zPw-vzRS05t5_Ug_7tTUITtK";
-
     const client = supabase.createClient(supabaseUrl, supabaseKey);
 
+    let modulesById = {};
+
+    async function loadModules() {
+      const { data, error } = await client
+        .from("modules")
+        .select("*")
+        .order("sort_order");
+
+      if (error) {
+        console.error(error);
+        return;
+      }
+      modulesById = {};
+      data.forEach(m => modulesById[m.id] = m);
+    }
+
     async function loadBelts() {
+      await loadModules();
+
       const { data, error } = await client
         .from("belts")
         .select("*")
         .order("sort_order");
 
       if (error) {
-        document.getElementById("app").innerText = "Fout bij laden";
+        document.getElementById("app").innerText = "Fout bij laden van bandgraden";
+        console.error(error);
         return;
       }
 
       const html = data.map(b => `
-        <button onclick="loadItems('${b.id}', '${b.name}')">
-          🥋 ${b.name}
-        </button>
-        <div id="belt-${b.id}"></div>
+        <div class="beltWrap">
+          <button class="beltBtn" onclick="loadItems('${b.id}')">🥋 ${b.name}</button>
+          <div id="belt-${b.id}"></div>
+        </div>
       `).join("");
 
       document.getElementById("app").innerHTML = html;
     }
 
-    async function loadItems(beltId, beltName) {
+    function groupByModule(items) {
+      const map = {};
+      items.forEach(it => {
+        const key = it.module_id || "no-module";
+        if (!map[key]) map[key] = [];
+        map[key].push(it);
+      });
+      return map;
+    }
+
+    async function loadItems(beltId) {
+      const target = document.getElementById(`belt-${beltId}`);
+      target.innerHTML = "<div class='muted'>Laden...</div>";
+
       const { data, error } = await client
         .from("items")
-        .select("*")
+        .select("id, title, body, sort_order, module_id")
         .eq("belt_id", beltId)
         .order("sort_order");
 
-      if (error) return;
+      if (error) {
+        target.innerHTML = "<div class='muted'>Fout bij laden</div>";
+        console.error(error);
+        return;
+      }
 
-      const html = data.map(i => `
-        <div class="item">📘 ${i.title}</div>
-      `).join("");
+      if (!data || data.length === 0) {
+        target.innerHTML = "<div class='muted'>Nog geen theorie</div>";
+        return;
+      }
 
-      document.getElementById(`belt-${beltId}`).innerHTML = html || "<div class='item'>Nog geen theorie</div>";
+      // Groepeer per module (Theorie / Tuls / Zelfverdediging / Terminologie)
+      const grouped = groupByModule(data);
+
+      // Sorteer modules op sort_order
+      const moduleIds = Object.keys(grouped).sort((a,b) => {
+        const ma = modulesById[a]?.sort_order ?? 999;
+        const mb = modulesById[b]?.sort_order ?? 999;
+        return ma - mb;
+      });
+
+      let out = "";
+      moduleIds.forEach(mid => {
+        const m = modulesById[mid];
+        const moduleName = m ? m.title : "Overig";
+
+        out += `<div class="moduleTitle">${moduleName}</div>`;
+
+        grouped[mid].forEach(it => {
+          out += `
+            <details>
+              <summary>📘 ${escapeHtml(it.title)}</summary>
+              <div class="bodyText">${escapeHtml(it.body || "")}</div>
+            </details>
+          `;
+        });
+      });
+
+      target.innerHTML = out;
+    }
+
+    function escapeHtml(str) {
+      return String(str)
+        .replaceAll("&", "&amp;")
+        .replaceAll("<", "&lt;")
+        .replaceAll(">", "&gt;")
+        .replaceAll('"', "&quot;")
+        .replaceAll("'", "&#039;");
     }
 
     loadBelts();
